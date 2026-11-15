@@ -1,0 +1,6 @@
+# Local Supabase configuration
+/admin-app/config.js
+
+# Local tooling
+.DS_Store
+Thumbs.db
