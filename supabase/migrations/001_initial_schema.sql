@@ -65,8 +65,16 @@ alter table public.order_items enable row level security;
 
 create policy "admins read own membership" on public.admin_users
 for select to authenticated using (user_id = auth.uid());
-create policy "admins manage memberships" on public.admin_users
-for all to authenticated using (public.is_store_admin()) with check (public.is_store_admin());
+create or replace function public.is_store_super_admin()
+returns boolean language sql stable security definer set search_path = public, pg_temp
+as $
+  select exists (
+    select 1 from public.admin_users
+    where user_id = auth.uid() and active = true and role = 'super_admin'
+  );
+$;
+create policy "super admins manage memberships" on public.admin_users
+for all to authenticated using (public.is_store_super_admin()) with check (public.is_store_super_admin());
 
 create policy "public read active products" on public.products
 for select to anon, authenticated using (is_active = true or public.is_store_admin());
